@@ -1,0 +1,136 @@
+var cliente = '';
+    var correo = '';
+
+function createDocument() {
+  //Utilities.sleep(30000); para el trigger
+  
+  var headers = Sheets.Spreadsheets.Values.get('1kXWp1CxUcCd92TCXJ-eJzaniOC7aSJpV4HOsO9AfQYc','G8:H13'); //Se guardan los datos del sheet en variables
+  var tactics = Sheets.Spreadsheets.Values.get('1T5oGZbz2h7_L503ArTH95Dhqmdj_KPWZCd-23qSgkVI','A1:E54');
+  var templaceId = '1EqUg9ovkg8g7J9rZn7o8CYxmpptF-LUNTFTac2IAqtk'; //Plantilla del documento en docs
+  
+    Logger.log(headers.values[1][1]);
+  
+    Tomardatos(); //Funcion de datos de Firebase
+    Logger.log(cliente);
+  
+    var object = 'Prensa';
+    var date = headers.values[4][1];
+  
+    //Make a copy of the template file
+    var documentId = DriveApp.getFileById(templaceId).makeCopy().getId();
+    
+    //Rename the copied file
+    DriveApp.getFileById(documentId).setName('Cotización para ' + 'Mapare ' + cliente + ' 2020');
+    
+    //Get the document body as a variable
+    var doc = DocumentApp.openById(documentId);
+    var body = doc.getBody();
+        
+    //Insert the names
+  
+    Logger.log(cliente);
+    Logger.log(correo);
+    Logger.log(object);
+    Logger.log(date);
+    body.replaceText('##Cliente##', cliente)
+    
+    body.replaceText('##Objeto##', object)
+    
+    body.replaceText('##Fecha##', date)
+    
+    for(var i = 0; i < tactics.values.length; i++){    
+ 
+    //Append tactics
+      parseTactics(tactics.values[i], body);
+  
+    }doc.saveAndClose();
+  
+  // variables a utilizar
+  var file = DriveApp.getFileById(documentId);//link del documento que se va a enviar
+  
+  var emailAddress = correo; //correo al cual se enviara el emmm correo xD
+  
+  var subject = 'Cotización'; //asunto del correo
+  
+  // esta es una condicion especial para celulares viejitos no creo q se use asi q puede ignorarla
+  var emailBody = "This is an email test for the user " + "name" + 
+					"\nFrom " + "city" + 
+					"\nWith email " + "mail" + 
+					"\nRegister on " + "timestamp" +
+					"\n\nThank you for register!"; 
+  
+  //esta es la parte que nos interesa aqui va el contenido del mensaje
+  var htmlBody = "Responde a este correo para confirmar que ha recibido la cotizacion."; 
+  
+  // estas son condiciones especiales de aqui lo unico descatable son los attachments
+  //https://developers.google.com/apps-script/reference/mail/mail-app#sendEmail(String,String,String,Object)  esta es informacion sobre las opciones especiales
+  
+  var advancedOpts = {attachments: [file],//de esta manera se agregan archivos como adjuntos si se pregunta que es el file es un archivo que se carga de la siguiente manera
+                      
+                      // este es el nombre que sale al abrir el mensaje como el alias se puede cambiar por el nombre de la empresa para que se vea bien
+                      name: "Mapare.sas",
+                      htmlBody: htmlBody};// aqui cargamos el contenido del mensaje no mover!!
+  
+  
+  
+  // y finalmente esta es la funcion que envia el correo simplemente le pasamos los parametros que ya mencionamos
+  // https://developers.google.com/apps-script/reference/mail/mail-app documentacion del metodo
+  MailApp.sendEmail(emailAddress, subject, emailBody, advancedOpts);
+
+}
+
+function parseTactics(tactics, body){ 
+  
+  body.appendListItem(tactics[0] + ' - ' + tactics[1] + ' - ' + tactics[2] + ' - ' + tactics[3] + ' - ' + tactics[4]).setGlyphType(DocumentApp.GlyphType.BULLET);
+  }
+
+function Tomardatos() {  
+  //Logger.log("hola")
+  
+  var result = UrlFetchApp.fetch("http://18.234.163.194:3001/maquinas");
+  var params = JSON.parse(result.getContentText());
+  var Ndata = Object.keys(params)  
+  //Logger.log(Ndata.length)   
+  for (var i = 0 ; i < Ndata.length ; i++){
+    //Logger.log(params[i].received)
+    //Logger.log(params[i].received == false)
+    if (params[i].received == false){
+      //Logger.log(params[i].id);
+      //Logger.log(params[i].name);
+      //Logger.log(params[i].lastName);
+      //Logger.log(params[i].email);      
+      var id = parseInt(params[i].id,10);
+      var nombre = params[i].name;
+      var apellido = params[i].lastName;
+      
+      
+      correo = params[i].email;
+      cliente = nombre + ' ' + apellido
+      
+      
+      Logger.log(id) 
+      //Logger.log(nombre)
+      //Logger.log(apellido)
+      //Logger.log(correo)
+      Completar(id);
+      break;      
+    }
+  }  
+  
+}
+
+function Completar(input){
+  var id = input;
+  // Terminar la cotizacion
+  var result = UrlFetchApp.fetch("http://18.234.163.194:3001/maquinas/upd/"+ id);
+  var params = result.getContentText();
+  Logger.log(params)
+}
+
+function doGet() {
+  var params = "gracias por sus datos";  
+  Logger.log("funciona")
+  //Tomardatos() 
+  createDocument();
+  return HtmlService.createHtmlOutput(params);
+}
