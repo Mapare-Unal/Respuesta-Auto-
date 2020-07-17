@@ -1,14 +1,58 @@
 var cliente = '';
-    var correo = '';
+var correo = '';
+var size = '';
+var file1 = '';
+var file2 = '';
+
+function test(){
+
+archivos('3')
+
+}
+
+function archivos (size){
+  var ids = [];
+  var comparador = '';
+  var optionalArgs={supportsAllDrives: true};  
+  var source_Folder = DriveApp.getFolderById('1E8fNgcLLpEMq_yok1F4FXOcJ82-LqyOi').getFiles();
+  if(size == '1'){
+       comparador = 'eque'
+       Logger.log('eque')
+     }
+  if(size == '2'){
+       comparador = 'dian'
+       Logger.log('dian')
+  }
+  if(size == '3'){  
+       comparador = "rande"
+       Logger.log('rande')
+  }
+  
+   while (source_Folder.hasNext()) {     
+      var file = source_Folder.next();
+     
+      //Logger.log(file.getName().indexOf(comparador))
+     
+     if (file.getName().indexOf(comparador) > -1){         
+        var ID = file.getId();   
+        Logger.log(file.getName())
+        ids.push(ID)      
+    }   
+   
+   } 
+  file1 = DriveApp.getFileById(ids[0])  
+  file2 = DriveApp.getFileById(ids[1])  
+}
+
 
 function createDocument() {
-  //Utilities.sleep(30000); para el trigger
+  Utilities.sleep(100000);
   
   var headers = Sheets.Spreadsheets.Values.get('1kXWp1CxUcCd92TCXJ-eJzaniOC7aSJpV4HOsO9AfQYc','G8:H13'); //Se guardan los datos del sheet en variables
   var tactics = Sheets.Spreadsheets.Values.get('1jVx_Zq1TbSRKvi8FzHrec2XDF1xBcv6pnLK8ISQar9o','A1:E20'); 
   var templaceId = '1EqUg9ovkg8g7J9rZn7o8CYxmpptF-LUNTFTac2IAqtk'; //Plantilla del documento en docs
   
-    Logger.log(headers.values[1][1]);
+    //Logger.log(headers.values[1][1]);
   
     Tomardatos(); //Funcion de datos de Firebase
     Logger.log(cliente);
@@ -28,10 +72,10 @@ function createDocument() {
         
     //Insert the name
   
-    Logger.log(cliente);
-    Logger.log(correo);
-    Logger.log(object);
-    Logger.log(date);
+    //Logger.log(cliente);
+    //Logger.log(correo);
+    //Logger.log(object);
+    //Logger.log(date);
     body.replaceText('##Cliente##', cliente)
     
     body.replaceText('##Objeto##', object)
@@ -44,7 +88,7 @@ function createDocument() {
       parseTactics(tactics.values[i], body);
   
     }doc.saveAndClose();
-  
+  archivos(size)
   // variables a utilizar
   var file = DriveApp.getFileById(documentId);//link del documento que se va a enviar
   
@@ -65,7 +109,7 @@ function createDocument() {
   // estas son condiciones especiales de aqui lo unico descatable son los attachments
   //https://developers.google.com/apps-script/reference/mail/mail-app#sendEmail(String,String,String,Object)  esta es informacion sobre las opciones especiales
   
-  var advancedOpts = {attachments: [file],//de esta manera se agregan archivos como adjuntos si se pregunta que es el file es un archivo que se carga de la siguiente manera
+  var advancedOpts = {attachments: [file,file1,file2],//de esta manera se agregan archivos como adjuntos si se pregunta que es el file es un archivo que se carga de la siguiente manera
                       
                       // este es el nombre que sale al abrir el mensaje como el alias se puede cambiar por el nombre de la empresa para que se vea bien
                       name: "Mapare.sas",
@@ -106,12 +150,12 @@ function Tomardatos() {
       
       correo = params[i].email;
       cliente = nombre + ' ' + apellido
+      size = params[i].size
       
-      
-      Logger.log(id) 
+      //Logger.log(id) 
       //Logger.log(nombre)
       //Logger.log(apellido)
-      //Logger.log(correo)
+      //+Logger.log(correo)
       Completar(id);
       break;      
     }
