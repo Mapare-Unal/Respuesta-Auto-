@@ -1,8 +1,30 @@
 var cliente = '';
-    var correo = '';
+var correo = '';
+var size = '';
+var file1 = '';
+var file2 = '';
+var file3 = '';
+
+
+function archivos (){
+  var ids = [];
+  var comparador = '';
+  var optionalArgs={supportsAllDrives: true};  
+  var source_Folder = DriveApp.getFolderById('1gpheQQVMtqoZ1r4Jul5-dAyQz85RBDhg').getFiles();
+    
+   while (source_Folder.hasNext()) {     
+      var file = source_Folder.next();     
+      Logger.log(file.getName())           
+      var ID = file.getId();  
+      ids.push(ID)      
+   }
+   file1 = DriveApp.getFileById(ids[0])  
+   file2 = DriveApp.getFileById(ids[1])  
+   file3 = DriveApp.getFileById(ids[2])
+}
 
 function createDocument() {
-  //Utilities.sleep(30000); para el trigger
+  Utilities.sleep(100000);
   
   var headers = Sheets.Spreadsheets.Values.get('1kXWp1CxUcCd92TCXJ-eJzaniOC7aSJpV4HOsO9AfQYc','G8:H13'); //Se guardan los datos del sheet en variables
   var tactics = Sheets.Spreadsheets.Values.get('12g-_szdy4Bc8aEMUOC2ffzNtG4A-k7eCMNROgV5S05k','A1:E23');
@@ -44,7 +66,7 @@ function createDocument() {
       parseTactics(tactics.values[i], body);
   
     }doc.saveAndClose();
-  
+  archivos();
   // variables a utilizar
   var file = DriveApp.getFileById(documentId);//link del documento que se va a enviar
   
@@ -65,7 +87,7 @@ function createDocument() {
   // estas son condiciones especiales de aqui lo unico descatable son los attachments
   //https://developers.google.com/apps-script/reference/mail/mail-app#sendEmail(String,String,String,Object)  esta es informacion sobre las opciones especiales
   
-  var advancedOpts = {attachments: [file],//de esta manera se agregan archivos como adjuntos si se pregunta que es el file es un archivo que se carga de la siguiente manera
+  var advancedOpts = {attachments: [file,file1,file2,file3],//de esta manera se agregan archivos como adjuntos si se pregunta que es el file es un archivo que se carga de la siguiente manera
                       
                       // este es el nombre que sale al abrir el mensaje como el alias se puede cambiar por el nombre de la empresa para que se vea bien
                       name: "Mapare.sas",
